@@ -5,9 +5,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
-import { MessageSquare } from 'lucide-react';
+import { ReportUserDialog } from './ReportUserDialog';
+import { MessageSquare, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFileUpload } from '@/hooks/useFileUpload';
+import { Badge } from '@/components/ui/badge';
 
 interface ChatAreaProps {
   selectedUser: Profile | null;
@@ -16,6 +18,10 @@ interface ChatAreaProps {
   isTyping: boolean;
   onSendMessage: (message: string, fileUrl?: string, fileType?: string, fileName?: string) => Promise<void>;
   onTyping: (isTyping: boolean) => void;
+  reportUser: (userId: string, reason?: string) => Promise<{ error: Error | null }>;
+  getReportCount: (userId: string) => number;
+  isUserBlocked: (userId: string) => boolean;
+  hasReportedUser: (userId: string) => boolean;
 }
 
 export const ChatArea = ({
@@ -24,7 +30,11 @@ export const ChatArea = ({
   currentUserId,
   isTyping,
   onSendMessage,
-  onTyping
+  onTyping,
+  reportUser,
+  getReportCount,
+  isUserBlocked,
+  hasReportedUser
 }: ChatAreaProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { uploadFile, uploading } = useFileUpload(currentUserId);
@@ -63,29 +73,60 @@ export const ChatArea = ({
     );
   }
 
+  const reportCount = selectedUser ? getReportCount(selectedUser.user_id) : 0;
+  const blocked = selectedUser ? isUserBlocked(selectedUser.user_id) : false;
+
+  // Determine badge color based on report count
+  const getBadgeVariant = () => {
+    if (reportCount >= 3) return 'destructive';
+    if (reportCount >= 2) return 'destructive';
+    if (reportCount >= 1) return 'secondary';
+    return 'secondary';
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-background">
       {/* Chat Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
-        <div className="relative">
-          <Avatar className="h-10 w-10 border-2 border-border">
-            <AvatarFallback className="bg-primary text-primary-foreground font-medium">
-              {getInitials(selectedUser.name)}
-            </AvatarFallback>
-          </Avatar>
-          <span
-            className={cn(
-              "absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card",
-              selectedUser.is_online ? "bg-green-500" : "bg-muted"
-            )}
-          />
+      <div className="flex items-center justify-between gap-3 p-4 border-b border-border bg-card">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Avatar className={cn(
+              "h-10 w-10 border-2",
+              reportCount >= 3 ? "border-destructive" : reportCount >= 2 ? "border-orange-500" : reportCount >= 1 ? "border-yellow-500" : "border-border"
+            )}>
+              <AvatarFallback className={cn(
+                "font-medium",
+                reportCount >= 3 ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
+              )}>
+                {getInitials(selectedUser.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span
+              className={cn(
+                "absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card",
+                selectedUser.is_online ? "bg-green-500" : "bg-muted"
+              )}
+            />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-card-foreground">{selectedUser.name}</h3>
+              {reportCount > 0 && (
+                <Badge variant={getBadgeVariant()} className="text-xs">
+                  {reportCount} report{reportCount > 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {blocked ? 'Blocked' : selectedUser.is_online ? 'Online' : 'Offline'}
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-card-foreground">{selectedUser.name}</h3>
-          <p className="text-xs text-muted-foreground">
-            {selectedUser.is_online ? 'Online' : 'Offline'}
-          </p>
-        </div>
+        <ReportUserDialog
+          userName={selectedUser.name}
+          onReport={(reason) => reportUser(selectedUser.user_id, reason)}
+          hasReported={hasReportedUser(selectedUser.user_id)}
+        />
       </div>
 
       {/* Messages Area */}
@@ -103,12 +144,21 @@ export const ChatArea = ({
       </ScrollArea>
 
       {/* Message Input */}
-      <MessageInput
-        onSend={onSendMessage}
-        onTyping={onTyping}
-        onFileSelect={uploadFile}
-        uploading={uploading}
-      />
+      {blocked ? (
+        <div className="p-4 border-t border-border bg-destructive/10">
+          <div className="flex items-center justify-center gap-2 text-destructive">
+            <ShieldAlert className="h-5 w-5" />
+            <span className="text-sm font-medium">This user is blocked due to multiple reports</span>
+          </div>
+        </div>
+      ) : (
+        <MessageInput
+          onSend={onSendMessage}
+          onTyping={onTyping}
+          onFileSelect={uploadFile}
+          uploading={uploading}
+        />
+      )}
     </div>
   );
 };

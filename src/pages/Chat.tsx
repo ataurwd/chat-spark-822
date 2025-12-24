@@ -7,6 +7,7 @@ import { useGroups } from '@/hooks/useGroups';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { useLastMessages } from '@/hooks/useLastMessages';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useReports } from '@/hooks/useReports';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { UserList } from '@/components/chat/UserList';
 import { ChatArea } from '@/components/chat/ChatArea';
@@ -23,6 +24,7 @@ const Chat = () => {
   const { messages: groupMessages, sendMessage: sendGroupMessage } = useGroupMessages(user?.id, selectedGroupId);
   const { isUserTyping, setTyping } = useTypingIndicator(user?.id, selectedUserId);
   const { lastMessages, groupLastMessages } = useLastMessages(user?.id);
+  const { reportUser, getReportCount, isUserBlocked, hasReportedUser } = useReports(user?.id);
   const { toast } = useToast();
   
   // Enable notifications
@@ -99,6 +101,7 @@ const Chat = () => {
             lastMessages={lastMessages}
             groupLastMessages={groupLastMessages}
             onCreateGroup={createGroup}
+            getReportCount={getReportCount}
           />
         </div>
         {selectedGroupId && selectedGroup ? (
@@ -118,6 +121,10 @@ const Chat = () => {
             isTyping={isUserTyping}
             onSendMessage={handleSendMessage}
             onTyping={setTyping}
+            reportUser={reportUser}
+            getReportCount={getReportCount}
+            isUserBlocked={isUserBlocked}
+            hasReportedUser={hasReportedUser}
           />
         )}
       </div>
