@@ -100,13 +100,22 @@ export const useMessages = (currentUserId: string | undefined, selectedUserId: s
     };
   }, [currentUserId, selectedUserId]);
 
-  const sendMessage = async (message: string) => {
-    if (!currentUserId || !selectedUserId || !message.trim()) return;
+  const sendMessage = async (
+    message: string,
+    fileUrl?: string,
+    fileType?: string,
+    fileName?: string
+  ) => {
+    if (!currentUserId || !selectedUserId) return;
+    if (!message.trim() && !fileUrl) return;
 
     const { error } = await supabase.from('messages').insert({
       sender_id: currentUserId,
       receiver_id: selectedUserId,
-      message: message.trim()
+      message: message.trim(),
+      file_url: fileUrl || null,
+      file_type: fileType || null,
+      file_name: fileName || null,
     });
 
     return { error };
