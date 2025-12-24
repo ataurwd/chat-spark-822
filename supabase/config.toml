@@ -1,1 +1,4 @@
 project_id = "xfiwsgmqasfvjkjumvvp"
+
+[functions.giphy-search]
+verify_jwt = false
