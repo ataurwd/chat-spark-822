@@ -8,6 +8,8 @@ import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { useLastMessages } from '@/hooks/useLastMessages';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useReports } from '@/hooks/useReports';
+import { useAdmin } from '@/hooks/useAdmin';
+import { useUserNotifications } from '@/hooks/useUserNotifications';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { UserList } from '@/components/chat/UserList';
 import { ChatArea } from '@/components/chat/ChatArea';
@@ -25,6 +27,8 @@ const Chat = () => {
   const { isUserTyping, setTyping } = useTypingIndicator(user?.id, selectedUserId);
   const { lastMessages, groupLastMessages } = useLastMessages(user?.id);
   const { reportUser, getReportCount, isUserBlocked, hasReportedUser } = useReports(user?.id);
+  const { isAdmin } = useAdmin(user?.id);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useUserNotifications(user?.id);
   const { toast } = useToast();
   
   // Enable notifications
@@ -87,7 +91,15 @@ const Chat = () => {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <ChatHeader profile={profile} onSignOut={handleSignOut} />
+      <ChatHeader 
+        profile={profile} 
+        onSignOut={handleSignOut}
+        isAdmin={isAdmin}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+      />
       <div className="flex-1 flex overflow-hidden">
         <div className="w-80 shrink-0 hidden md:block">
           <UserList

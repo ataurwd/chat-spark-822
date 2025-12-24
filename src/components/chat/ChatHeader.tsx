@@ -1,14 +1,40 @@
+import { useNavigate } from 'react-router-dom';
 import { Profile } from '@/types/chat';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, MessageCircle } from 'lucide-react';
+import { LogOut, MessageCircle, Shield } from 'lucide-react';
+import { NotificationDropdown } from './NotificationDropdown';
+
+interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
 
 interface ChatHeaderProps {
   profile: Profile;
   onSignOut: () => void;
+  isAdmin?: boolean;
+  notifications: Notification[];
+  unreadCount: number;
+  onMarkAsRead: (id: string) => void;
+  onMarkAllAsRead: () => void;
 }
 
-export const ChatHeader = ({ profile, onSignOut }: ChatHeaderProps) => {
+export const ChatHeader = ({ 
+  profile, 
+  onSignOut, 
+  isAdmin,
+  notifications,
+  unreadCount,
+  onMarkAsRead,
+  onMarkAllAsRead
+}: ChatHeaderProps) => {
+  const navigate = useNavigate();
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -25,6 +51,23 @@ export const ChatHeader = ({ profile, onSignOut }: ChatHeaderProps) => {
         <h1 className="text-xl font-bold">ChatFlow</h1>
       </div>
       <div className="flex items-center gap-3">
+        {isAdmin && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin')}
+            className="text-primary-foreground hover:bg-primary-foreground/10"
+            title="Admin Panel"
+          >
+            <Shield className="h-5 w-5" />
+          </Button>
+        )}
+        <NotificationDropdown
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onMarkAsRead={onMarkAsRead}
+          onMarkAllAsRead={onMarkAllAsRead}
+        />
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8 border-2 border-primary-foreground/20">
             <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground text-sm font-medium">
