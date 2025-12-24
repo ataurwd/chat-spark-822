@@ -19,12 +19,18 @@ export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId, l
     
     const isFromMe = lastMsg.sender_id === currentUserId;
     const prefix = isFromMe ? 'You: ' : '';
-    const text = lastMsg.message.length > 30 
-      ? lastMsg.message.slice(0, 30) + '...' 
-      : lastMsg.message;
+    let text = lastMsg.message;
+    
+    // Handle file messages
+    if (!text && lastMsg.file_type) {
+      text = lastMsg.file_type === 'gif' ? 'GIF' : lastMsg.file_type === 'image' ? 'Photo' : 'File';
+    }
+    
+    text = text.length > 30 ? text.slice(0, 30) + '...' : text;
     
     return { text: prefix + text, isUnread: !isFromMe && !lastMsg.seen };
   };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -39,6 +45,19 @@ export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId, l
     return `Last seen ${formatDistanceToNow(new Date(profile.last_seen), { addSuffix: true })}`;
   };
 
+  // Sort users by last message time (most recent first)
+  const sortedUsers = [...users].sort((a, b) => {
+    const msgA = lastMessages[a.user_id];
+    const msgB = lastMessages[b.user_id];
+    
+    if (!msgA && !msgB) return 0;
+    if (!msgA) return 1;
+    if (!msgB) return -1;
+    
+    return new Date(msgB.created_at).getTime() - new Date(msgA.created_at).getTime();
+  });
+
+
   return (
     <div className="h-full flex flex-col bg-card border-r border-border">
       <div className="p-4 border-b border-border">
@@ -51,7 +70,7 @@ export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId, l
               No other users yet
             </p>
           ) : (
-            users.map(user => (
+            sortedUsers.map(user => (
               <button
                 key={user.id}
                 onClick={() => onSelectUser(user.user_id)}
