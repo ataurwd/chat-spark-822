@@ -16,6 +16,9 @@ export interface Message {
   message: string;
   seen: boolean;
   created_at: string;
+  file_url?: string | null;
+  file_type?: string | null;
+  file_name?: string | null;
 }
 
 export interface TypingStatus {

@@ -7,13 +7,14 @@ import { MessageInput } from './MessageInput';
 import { TypingIndicator } from './TypingIndicator';
 import { MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useFileUpload } from '@/hooks/useFileUpload';
 
 interface ChatAreaProps {
   selectedUser: Profile | null;
   messages: Message[];
   currentUserId: string;
   isTyping: boolean;
-  onSendMessage: (message: string) => Promise<void>;
+  onSendMessage: (message: string, fileUrl?: string, fileType?: string, fileName?: string) => Promise<void>;
   onTyping: (isTyping: boolean) => void;
 }
 
@@ -26,6 +27,7 @@ export const ChatArea = ({
   onTyping
 }: ChatAreaProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { uploadFile, uploading } = useFileUpload(currentUserId);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -101,7 +103,12 @@ export const ChatArea = ({
       </ScrollArea>
 
       {/* Message Input */}
-      <MessageInput onSend={onSendMessage} onTyping={onTyping} />
+      <MessageInput
+        onSend={onSendMessage}
+        onTyping={onTyping}
+        onFileSelect={uploadFile}
+        uploading={uploading}
+      />
     </div>
   );
 };

@@ -24,8 +24,13 @@ const Chat = () => {
 
   const selectedUser = users.find(u => u.user_id === selectedUserId) || null;
 
-  const handleSendMessage = async (message: string) => {
-    const result = await sendMessage(message);
+  const handleSendMessage = async (
+    message: string,
+    fileUrl?: string,
+    fileType?: string,
+    fileName?: string
+  ) => {
+    const result = await sendMessage(message, fileUrl, fileType, fileName);
     if (result?.error) {
       toast({
         title: 'Failed to send message',
