@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUsers } from '@/hooks/useUsers';
 import { useMessages } from '@/hooks/useMessages';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { useLastMessages } from '@/hooks/useLastMessages';
+import { useNotifications } from '@/hooks/useNotifications';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { UserList } from '@/components/chat/UserList';
 import { ChatArea } from '@/components/chat/ChatArea';
@@ -14,7 +16,11 @@ const Chat = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { messages, sendMessage } = useMessages(user?.id, selectedUserId);
   const { isUserTyping, setTyping } = useTypingIndicator(user?.id, selectedUserId);
+  const { lastMessages } = useLastMessages(user?.id);
   const { toast } = useToast();
+  
+  // Enable notifications
+  useNotifications(user?.id, selectedUserId, users);
 
   const selectedUser = users.find(u => u.user_id === selectedUserId) || null;
 
@@ -49,6 +55,7 @@ const Chat = () => {
             selectedUserId={selectedUserId}
             onSelectUser={setSelectedUserId}
             currentUserId={user?.id || ''}
+            lastMessages={lastMessages}
           />
         </div>
         <ChatArea

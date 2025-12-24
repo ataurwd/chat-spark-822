@@ -1,4 +1,4 @@
-import { Profile } from '@/types/chat';
+import { Profile, Message } from '@/types/chat';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -9,9 +9,22 @@ interface UserListProps {
   selectedUserId: string | null;
   onSelectUser: (userId: string) => void;
   currentUserId: string;
+  lastMessages: Record<string, Message>;
 }
 
-export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId }: UserListProps) => {
+export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId, lastMessages }: UserListProps) => {
+  const getLastMessagePreview = (userId: string) => {
+    const lastMsg = lastMessages[userId];
+    if (!lastMsg) return null;
+    
+    const isFromMe = lastMsg.sender_id === currentUserId;
+    const prefix = isFromMe ? 'You: ' : '';
+    const text = lastMsg.message.length > 30 
+      ? lastMsg.message.slice(0, 30) + '...' 
+      : lastMsg.message;
+    
+    return { text: prefix + text, isUnread: !isFromMe && !lastMsg.seen };
+  };
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -65,9 +78,24 @@ export const UserList = ({ users, selectedUserId, onSelectUser, currentUserId }:
                   <p className="font-medium text-card-foreground truncate">
                     {user.name}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {getLastSeenText(user)}
-                  </p>
+                  {(() => {
+                    const preview = getLastMessagePreview(user.user_id);
+                    if (preview) {
+                      return (
+                        <p className={cn(
+                          "text-xs truncate",
+                          preview.isUnread ? "text-foreground font-medium" : "text-muted-foreground"
+                        )}>
+                          {preview.text}
+                        </p>
+                      );
+                    }
+                    return (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {getLastSeenText(user)}
+                      </p>
+                    );
+                  })()}
                 </div>
               </button>
             ))
