@@ -121,5 +121,33 @@ export const useMessages = (currentUserId: string | undefined, selectedUserId: s
     return { error };
   };
 
-  return { messages, loading, sendMessage };
+  const editMessage = async (messageId: string, newMessage: string) => {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+    
+    const { error } = await supabase
+      .from('messages')
+      .update({ message: newMessage.trim() })
+      .eq('id', messageId)
+      .eq('sender_id', currentUserId);
+
+    return { error };
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!currentUserId) return { error: new Error('Not authenticated') };
+    
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('sender_id', currentUserId);
+
+    if (!error) {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    }
+
+    return { error };
+  };
+
+  return { messages, loading, sendMessage, editMessage, deleteMessage };
 };

@@ -22,8 +22,8 @@ const Chat = () => {
   const { groups, groupMembers, createGroup } = useGroups(user?.id);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
-  const { messages, sendMessage } = useMessages(user?.id, selectedUserId);
-  const { messages: groupMessages, sendMessage: sendGroupMessage } = useGroupMessages(user?.id, selectedGroupId);
+  const { messages, sendMessage, editMessage, deleteMessage } = useMessages(user?.id, selectedUserId);
+  const { messages: groupMessages, sendMessage: sendGroupMessage, editMessage: editGroupMessage, deleteMessage: deleteGroupMessage } = useGroupMessages(user?.id, selectedGroupId);
   const { isUserTyping, setTyping } = useTypingIndicator(user?.id, selectedUserId);
   const { lastMessages, groupLastMessages } = useLastMessages(user?.id);
   
@@ -123,6 +123,8 @@ const Chat = () => {
             currentUserId={user?.id || ''}
             users={users}
             onSendMessage={handleSendGroupMessage}
+            onEditMessage={editGroupMessage}
+            onDeleteMessage={deleteGroupMessage}
           />
         ) : (
           <ChatArea
@@ -132,6 +134,8 @@ const Chat = () => {
             isTyping={isUserTyping}
             onSendMessage={handleSendMessage}
             onTyping={setTyping}
+            onEditMessage={editMessage}
+            onDeleteMessage={deleteMessage}
           />
         )}
       </div>

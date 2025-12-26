@@ -13,6 +13,8 @@ interface GroupChatAreaProps {
   currentUserId: string;
   users: Profile[];
   onSendMessage: (message: string, fileUrl?: string, fileType?: string, fileName?: string) => Promise<void>;
+  onEditMessage: (messageId: string, newMessage: string) => Promise<{ error: unknown } | undefined>;
+  onDeleteMessage: (messageId: string) => Promise<{ error: unknown } | undefined>;
 }
 
 export const GroupChatArea = ({
@@ -21,7 +23,9 @@ export const GroupChatArea = ({
   messages,
   currentUserId,
   users,
-  onSendMessage
+  onSendMessage,
+  onEditMessage,
+  onDeleteMessage
 }: GroupChatAreaProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { uploadFile, uploading } = useFileUpload(currentUserId);
@@ -76,6 +80,8 @@ export const GroupChatArea = ({
                 <MessageBubble
                   message={message}
                   isOwn={isOwn}
+                  onEdit={onEditMessage}
+                  onDelete={onDeleteMessage}
                 />
               </div>
             );

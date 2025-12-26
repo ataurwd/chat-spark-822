@@ -16,6 +16,8 @@ interface ChatAreaProps {
   isTyping: boolean;
   onSendMessage: (message: string, fileUrl?: string, fileType?: string, fileName?: string) => Promise<void>;
   onTyping: (isTyping: boolean) => void;
+  onEditMessage: (messageId: string, newMessage: string) => Promise<{ error: unknown } | undefined>;
+  onDeleteMessage: (messageId: string) => Promise<{ error: unknown } | undefined>;
 }
 
 export const ChatArea = ({
@@ -24,7 +26,9 @@ export const ChatArea = ({
   currentUserId,
   isTyping,
   onSendMessage,
-  onTyping
+  onTyping,
+  onEditMessage,
+  onDeleteMessage
 }: ChatAreaProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { uploadFile, uploading } = useFileUpload(currentUserId);
@@ -98,6 +102,8 @@ export const ChatArea = ({
               key={message.id}
               message={message}
               isOwn={message.sender_id === currentUserId}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
             />
           ))}
           {isTyping && <TypingIndicator />}
