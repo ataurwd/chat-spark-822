@@ -53,7 +53,7 @@ export const useNotifications = (
             if (permissionRef.current === 'granted' && document.hidden) {
               new Notification(senderName, {
                 body: newMessage.message,
-                icon: '/favicon.ico'
+                icon: ''
               });
             }
           }
