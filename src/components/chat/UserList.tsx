@@ -17,7 +17,6 @@ interface UserListProps {
   lastMessages: Record<string, Message>;
   groupLastMessages: Record<string, Message>;
   onCreateGroup: (name: string, memberIds: string[]) => Promise<{ error: Error | null }>;
-  getReportCount: (userId: string) => number;
 }
 
 export const UserList = ({
@@ -30,8 +29,7 @@ export const UserList = ({
   currentUserId,
   lastMessages,
   groupLastMessages,
-  onCreateGroup,
-  getReportCount
+  onCreateGroup
 }: UserListProps) => {
   const getLastMessagePreview = (userId: string) => {
     const lastMsg = lastMessages[userId];
@@ -159,9 +157,7 @@ export const UserList = ({
           {sortedUsers.length > 0 && (
             <>
               <p className="text-xs font-medium text-muted-foreground px-3 py-2 mt-2">Direct Messages</p>
-              {sortedUsers.map(user => {
-                const reportCount = getReportCount(user.user_id);
-                return (
+              {sortedUsers.map(user => (
                 <button
                   key={user.id}
                   onClick={() => onSelectUser(user.user_id)}
@@ -172,14 +168,8 @@ export const UserList = ({
                   )}
                 >
                   <div className="relative">
-                    <Avatar className={cn(
-                      "h-12 w-12 border-2",
-                      reportCount >= 3 ? "border-destructive" : reportCount >= 2 ? "border-orange-500" : reportCount >= 1 ? "border-yellow-500" : "border-border"
-                    )}>
-                      <AvatarFallback className={cn(
-                        "font-medium",
-                        reportCount >= 3 ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
-                      )}>
+                    <Avatar className="h-12 w-12 border-2 border-border">
+                      <AvatarFallback className="font-medium bg-primary text-primary-foreground">
                         {getInitials(user.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -214,8 +204,7 @@ export const UserList = ({
                     })()}
                   </div>
                 </button>
-                );
-              })}
+              ))}
             </>
           )}
 
