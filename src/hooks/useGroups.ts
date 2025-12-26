@@ -79,17 +79,23 @@ export const useGroups = (userId: string | undefined) => {
     const { data: group, error: groupError } = await supabase
       .from('groups')
       .insert({ name, created_by: userId })
-      .select()
+      .select('id')
       .single();
 
     if (groupError || !group) {
+      console.error('Group creation error:', groupError);
       return { error: groupError };
     }
 
-    // Add creator as member
-    await supabase
+    // Add creator as member first (this is required before the group becomes visible)
+    const { error: creatorMemberError } = await supabase
       .from('group_members')
       .insert({ group_id: group.id, user_id: userId });
+
+    if (creatorMemberError) {
+      console.error('Creator member error:', creatorMemberError);
+      return { error: creatorMemberError };
+    }
 
     // Add other members
     const memberInserts = memberIds
@@ -97,8 +103,14 @@ export const useGroups = (userId: string | undefined) => {
       .map(id => ({ group_id: group.id, user_id: id }));
 
     if (memberInserts.length > 0) {
-      await supabase.from('group_members').insert(memberInserts);
+      const { error: membersError } = await supabase.from('group_members').insert(memberInserts);
+      if (membersError) {
+        console.error('Members insert error:', membersError);
+      }
     }
+
+    // Refetch groups to update the list
+    await fetchGroups();
 
     return { data: group, error: null };
   };
