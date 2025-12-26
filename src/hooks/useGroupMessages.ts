@@ -77,5 +77,33 @@ export const useGroupMessages = (userId: string | undefined, groupId: string | n
     return { error };
   };
 
-  return { messages, loading, sendMessage };
+  const editMessage = async (messageId: string, newMessage: string) => {
+    if (!userId) return { error: new Error('Not authenticated') };
+    
+    const { error } = await supabase
+      .from('messages')
+      .update({ message: newMessage.trim() })
+      .eq('id', messageId)
+      .eq('sender_id', userId);
+
+    return { error };
+  };
+
+  const deleteMessage = async (messageId: string) => {
+    if (!userId) return { error: new Error('Not authenticated') };
+    
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', messageId)
+      .eq('sender_id', userId);
+
+    if (!error) {
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+    }
+
+    return { error };
+  };
+
+  return { messages, loading, sendMessage, editMessage, deleteMessage };
 };
